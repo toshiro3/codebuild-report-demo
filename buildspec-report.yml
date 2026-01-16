@@ -1,0 +1,25 @@
+version: 0.2
+
+# CodeBuild 標準レポート機能の検証用
+
+phases:
+  install:
+    runtime-versions:
+      php: 8.2
+    commands:
+      - composer install --no-interaction --prefer-dist
+
+  build:
+    commands:
+      - mkdir -p reports
+      - vendor/bin/phpunit --testsuite Unit --log-junit reports/junit.xml
+
+reports:
+  phpunit-reports:
+    files:
+      - "reports/junit.xml"
+    file-format: JUNITXML
+
+cache:
+  paths:
+    - vendor/**/*

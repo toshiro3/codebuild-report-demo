@@ -1,0 +1,43 @@
+version: 0.2
+
+# Allure Report の検証用
+
+env:
+  variables:
+    ALLURE_BUCKET: "your-allure-report-bucket"
+
+phases:
+  install:
+    runtime-versions:
+      php: 8.2
+    commands:
+      - composer install --no-interaction --prefer-dist
+      # Allure CLI インストール
+      - curl -o allure-2.24.0.tgz -Ls https://repo.maven.apache.org/maven2/io/qameta/allure/allure-commandline/2.24.0/allure-commandline-2.24.0.tgz
+      - tar -zxvf allure-2.24.0.tgz
+      - export PATH="$PWD/allure-2.24.0/bin:$PATH"
+      - allure --version
+
+  pre_build:
+    commands:
+      # 前回の履歴をダウンロード（初回は失敗してもOK）
+      - mkdir -p allure-results/history
+      - aws s3 sync "s3://${ALLURE_BUCKET}/history" ./allure-results/history || true
+
+  build:
+    commands:
+      - vendor/bin/phpunit --testsuite Unit
+
+  post_build:
+    commands:
+      # Allure レポート生成
+      - export PATH="$PWD/allure-2.24.0/bin:$PATH"
+      - allure generate ./allure-results -o ./allure-report --clean
+      # S3 にアップロード
+      - aws s3 sync ./allure-report "s3://${ALLURE_BUCKET}/report" --delete
+      - aws s3 sync ./allure-report/history "s3://${ALLURE_BUCKET}/history"
+      - echo "Allure Report uploaded to s3://${ALLURE_BUCKET}/report/index.html"
+
+cache:
+  paths:
+    - vendor/**/*
