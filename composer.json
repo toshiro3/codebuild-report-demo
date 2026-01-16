@@ -4,7 +4,7 @@
     "type": "project",
     "require-dev": {
         "phpunit/phpunit": "^10.0",
-        "allure-framework/allure-phpunit": "^2.0"
+        "qameta/allure-phpunit": "^3.0"
     },
     "autoload": {
         "psr-4": {
