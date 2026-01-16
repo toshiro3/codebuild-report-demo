@@ -12,7 +12,7 @@
     <!-- Allure PHPUnit Extension -->
     <extensions>
         <bootstrap class="Qameta\Allure\PHPUnit\AllureExtension">
-            <parameter name="config" value="allure-config.json"/>
+            <parameter name="config" value="config/allure.config.php"/>
         </bootstrap>
     </extensions>
 </phpunit>

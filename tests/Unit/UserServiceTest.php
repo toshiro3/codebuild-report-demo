@@ -8,14 +8,13 @@ use PHPUnit\Framework\TestCase;
 use Qameta\Allure\Attribute\DisplayName;
 use Qameta\Allure\Attribute\Description;
 use Qameta\Allure\Attribute\Severity;
-use Qameta\Allure\Model\Severity as SeverityLevel;
 
 #[DisplayName('ユーザーサービスのテスト')]
 #[Description('ユーザー関連の機能をテストします')]
 class UserServiceTest extends TestCase
 {
     #[DisplayName('ユーザー名のバリデーション - 正常系')]
-    #[Severity(SeverityLevel::CRITICAL)]
+    #[Severity(Severity::CRITICAL)]
     public function testValidUsername(): void
     {
         $username = 'testuser';
@@ -23,7 +22,7 @@ class UserServiceTest extends TestCase
     }
 
     #[DisplayName('メールアドレスのバリデーション')]
-    #[Severity(SeverityLevel::NORMAL)]
+    #[Severity(Severity::NORMAL)]
     public function testValidEmail(): void
     {
         $email = 'test@example.com';

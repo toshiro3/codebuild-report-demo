@@ -1,22 +1,43 @@
 services:
+  # composer install の確認
   composer:
     image: composer:2
     volumes:
       - .:/app
     working_dir: /app
-    command: install
+    entrypoint: composer
+    command: install --no-interaction
 
-  php:
+  # PHPUnit 実行（JUnit XML出力）
+  test:
     image: php:8.2-cli
     volumes:
       - .:/app
     working_dir: /app
-    command: vendor/bin/phpunit
+    depends_on:
+      composer:
+        condition: service_completed_successfully
+    command: sh -c "mkdir -p reports && vendor/bin/phpunit --testsuite Unit --log-junit reports/junit.xml"
 
-  allure:
+  # PHPUnit 実行（Allure出力）
+  test-allure:
+    image: php:8.2-cli
+    volumes:
+      - .:/app
+    working_dir: /app
+    depends_on:
+      composer:
+        condition: service_completed_successfully
+    command: vendor/bin/phpunit --testsuite Unit
+
+  # Allure レポートサーバー（ブラウザで確認用）
+  allure-serve:
     image: frankescobar/allure-docker-service
     ports:
       - "5050:5050"
     volumes:
       - ./allure-results:/app/allure-results
       - ./allure-report:/app/default-reports
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: 3
+      KEEP_HISTORY: 1

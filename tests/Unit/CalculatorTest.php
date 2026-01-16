@@ -8,14 +8,13 @@ use PHPUnit\Framework\TestCase;
 use Qameta\Allure\Attribute\DisplayName;
 use Qameta\Allure\Attribute\Description;
 use Qameta\Allure\Attribute\Severity;
-use Qameta\Allure\Model\Severity as SeverityLevel;
 
 #[DisplayName('計算サービスのテスト')]
 #[Description('計算処理の正確性をテストします')]
 class CalculatorTest extends TestCase
 {
     #[DisplayName('足し算のテスト')]
-    #[Severity(SeverityLevel::BLOCKER)]
+    #[Severity(Severity::BLOCKER)]
     public function testAddition(): void
     {
         $result = 2 + 3;
@@ -44,7 +43,7 @@ class CalculatorTest extends TestCase
     }
 
     #[DisplayName('ゼロ除算の例外テスト')]
-    #[Severity(SeverityLevel::CRITICAL)]
+    #[Severity(Severity::CRITICAL)]
     public function testDivisionByZeroThrowsException(): void
     {
         $this->expectException(\DivisionByZeroError::class);
