@@ -2,8 +2,8 @@
 
 CodeBuild のテスト結果を可視化する2つの方法を検証するプロジェクト。
 
-- **CodeBuild 標準レポート機能**: AWS コンソールで確認、30日保持
-- **Allure Report**: S3 ホスティング、履歴・トレンド表示、長期保存
+- **CodeBuild 標準レポート機能**: AWS コンソールで確認、セットアップが簡単
+- **Allure Report**: リッチな UI、詳細なテスト管理
 
 ## 構成
 
@@ -93,6 +93,9 @@ aws iam put-role-policy \
 ```
 
 #### S3バケットの作成（Allure用）
+
+> ⚠️ **セキュリティに関する注意**
+> テスト結果にはクラス名やエラーログに含まれる環境変数など、機密情報が混じる可能性があります。社内プロジェクトで利用する場合は、CloudFront + OAC と WAF や IP 制限を組み合わせる、あるいは VPN 内からのみアクセス可能な設定を推奨します。
 
 ```bash
 BUCKET_NAME="your-allure-report-bucket"
@@ -197,6 +200,8 @@ aws codebuild start-build --project-name codebuild-report-allure
 aws codebuild start-build --project-name codebuild-report-allure
 ```
 
+※ Allure の履歴は最大20件に制限されています
+
 ### 5. クリーンアップ
 
 ```bash
@@ -205,7 +210,9 @@ aws codebuild delete-project --name codebuild-report-standard
 aws codebuild delete-project --name codebuild-report-allure
 
 # レポートグループ削除
-# （コンソールから確認して削除）
+aws codebuild delete-report-group \
+  --arn "arn:aws:codebuild:ap-northeast-1:$(aws sts get-caller-identity --query Account --output text):report-group/codebuild-report-standard-phpunit-reports" \
+  --delete-reports
 
 # S3バケット削除
 aws s3 rb "s3://your-allure-report-bucket" --force
@@ -217,6 +224,10 @@ aws iam delete-role-policy \
 
 aws iam delete-role --role-name codebuild-report-demo-role
 
+# CloudWatch Logs 削除
+aws logs delete-log-group --log-group-name "/aws/codebuild/codebuild-report-standard"
+aws logs delete-log-group --log-group-name "/aws/codebuild/codebuild-report-allure"
+
 rm -f trust-policy.json codebuild-policy.json bucket-policy.json
 ```
 
@@ -224,9 +235,9 @@ rm -f trust-policy.json codebuild-policy.json bucket-policy.json
 
 | 項目 | CodeBuild標準 | Allure Report |
 |-----|--------------|---------------|
-| セットアップ | 簡単 | やや複雑 |
-| 保持期間 | 30日 | 無制限（S3） |
-| 履歴・トレンド | なし | あり |
-| 詳細度 | 基本的 | 詳細 |
-| 費用 | 無料 | S3費用のみ |
+| セットアップ | ◎ 簡単 | △ やや複雑 |
+| レポート保持 | 30日（自動削除） | S3 に保存（設定次第） |
+| 履歴・トレンド | 簡易的（成功率・実行時間の推移） | 詳細（最大20件） |
+| UI の詳細度 | 基本的 | リッチ |
+| 費用 | 無料（ビルド料金に含まれる） | S3 費用のみ |
 | 並列結果の結合 | 別々に表示 | 自動で統合 |
